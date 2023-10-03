@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+
+    <head>  
+        <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+        
+        <style type="text/tailwindcss">
+            @tailwind base;
+            @tailwind components;
+            @tailwind utilities;
+        </style>
+
+
+        
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        <script>
+            const api_url = "https://pokeapi.co/api/v2/pokemon/"
+
+            function app(){
+                return {
+                    showResult: false,
+                    numberOfStarters: 3,
+                    rightChoice: 0,
+                    hit: false,
+                    minId: 1,
+                    maxId: 1000,
+                    pokemon: [],
+
+                    async getRandPkmn(){
+                        let randId = Math.floor(this.minId + Math.random()*(this.maxId - this.minId + 1));
+
+                        let pkmUrl = api_url+randId.toString();
+
+                        
+                        let response = await fetch(pkmUrl);
+                            
+                        let data = response.json();
+
+
+                        return data;
+                    },
+
+                    async initPkm() {
+
+                        for(let i=0; i<this.numberOfStarters; i++){
+                            let pkmn = await this.getRandPkmn();
+                            this.pokemon.push(pkmn)
+                        }
+                        
+                        this.rightChoice = Math.floor(0 + Math.random()*((this.numberOfStarters-1) - 0 + 1));
+                        
+                        console.log("escolha certa: "+this.rightChoice.toString())
+
+                    },
+
+                    evaluateChoice(index){
+                        this.hit = index == this.rightChoice ?  true : false;
+                        this.showResult = true;
+
+                    },
+
+                    closeAndReset(){
+                        this.pokemon = []
+
+                        this.initPkm();
+
+                        this.showResult = false;
+                    }
+
+
+
+                }
+            }
+
+        </script>
+
+        <script src="https://kit.fontawesome.com/8e543a0707.js" crossorigin="anonymous"></script>
+    </head>
+    <body class="flex flex-col gap-5 min-w-screen min-h-screen bg-slate-50">
+        <div x-data="app()" x-init="initPkm()" x-cloak>
+
+            <div class="absolute flex items-center w-screen h-screen bg-black/75 " x-show.transition.opacity="showResult">            
+                <div class="group col-span-3 w-100 max-w-md mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:ring-sky-500 h-fit">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid  text-md "
+                        :class="{
+                            'fa-check text-sky-500': hit == true,
+                            'fa-xmark text-red-500': hit == false
+                        }"
+                        ></i>
+                        <h3  class="text-slate-900  text-sm font-semibold" x-text="hit ? 'Você Acertou!' : 'Você Errou!'"></h3>
+                    </div>
+                    <p class="text-slate-500 text-sm" x-text="hit ? 'Parabéns, você escolheu o pokemon correto.' : 'Que pena! Não foi dessa vez.'"></p>
+                    <button x-on:click="closeAndReset()" class="bg-sky-300 hover:bg-sky-500 text-white font-bold py-2 px-4 rounded w-fit" >Tentar de novo</button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center h-20">
+            <h1 class="text-2xl font-bold">Escolha seu inicial!</h1>
+            </div>
+
+        
+        
+
+            <div class="grid grid-rows-3 sm:grid-cols-3 grow h-fit" >            
+                <template x-for="(pkm, index) in pokemon" >
+                    <div class="flex flex-col aspect-square row-span-1 sm:col-span-1 self-center justify-center items-center bg-white m-2 px-1 sm:px-2 py-4 gap-2 ring-slate-900/5 shadow-lg  hover:ring-sky-500">
+                        <img :src="pkm.sprites.front_default" >
+                        <div class="text-center" x-text="pkm.name"></div>
+                        <button x-on:click="evaluateChoice(index)" class="bg-sky-300 hover:bg-sky-500 text-white font-bold py-2 px-4 rounded w-1/2" >Escolher!</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+
+
+
+        
+    </body>
+</html>
